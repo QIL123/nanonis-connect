@@ -1,0 +1,150 @@
+%!TEX root = nanoLib.tex
+\section{The +dat package folder}
+\label{sec::dat}
+
+Besides surface imaging \nanonis{} allows to store data measured by the physical channels. Data from the so called experiments are stored in a \emph{file.dat}.
+Once loaded, variable, from now on \emph{datFile}, is a structure divided in: \emph{i}) \textbf{header}, a structure containing all information present in the header of the \emph{file.dat}, and \emph{ii}) \textbf{channels}, an array of channel structures containing data and information about every channel.
+Both, \textbf{header} and \textbf{channels} can be called by
+\begin{center}
+\emph{datFile.header} \quad \text{and} \quad \emph{datfile.channels\{\#\}}
+\end{center}
+\# being the number of the channel. When only one channel is loaded one refers to the channel simply as \emph{datfile.channels}. 
+More information about the substructure of header and channels is presented below.
+
+
+\subsection{datFile: header and channels tructures}
+\label{sec:sxmFile}
+
+The functions works with a structure that holds every relevant informations. To access the scan data on a structure named \emph{expFile}, one should type \emph{expFile.header.rec\_date}. Header and channels structure have following fields:
+
+\bdf
+\item[header] is a structure composed of:
+  \bdf
+  \item[file] name of the file
+  \item[path] path of the file
+  \item[experiment] experiment name
+  \item[rec\_date] date of the scan
+  \item[rec\_time] time of the scan
+  \item[points] number of experiment points
+  \item[grid\_points] number of experiment repetition
+  \item[channels] list of registered channels
+  \item[list] is a $2 \times n$ list of string, $n$ being the number of lines in the text header. Lines in the \emph{header.list} are of the form \{'Key','data'\}, e.g., \{'rec\_date','22.08.2016'\}
+  \item[$\cdots$] Others informations extracted from the file depending on the specific experiment
+  \edf
+
+\item[channels] is an array of channel structures composed of:
+  \bdf
+  \item[Direction] 'forward' or 'backward'
+  \item[Unit] 'Z' or whatever the unit is
+  \item[Name] The name of the channel
+  \item[data] A $n\times m$ matrix of processed data, where $n$ is the number of points and $m$ is the loop number (default $m=1$)
+  \edf
+\edf
+\textbf{The first channel, i.e. channel(1), is reserved to the sweep\_signal.}
+
+%-------------------------------------------------------------------------------%
+%  +load                                                                        %
+%-------------------------------------------------------------------------------%
+\subsection{+load}
+This folder contains everything needed to load and process \emph{.dat} files.
+\textbf{NOTE: While using \nanonis{} it is sometimes useful to create user defined experiments (see section \ref{nanolib::user}). 
+The NanoLib library allows you to incorporate user defined functions.
+The first time you load a \emph{file.dat} the NanoLib library will ask you to indicate the path to the NanoLib library and the path for the userNanoLib library (press cancel if you don't have any user defined functions).
+A file called \emph{datSettings.txt} will be created in the package folder \emph{+dat/+load/} with the local settings.}
+% ------------------------------ %
+\subsubsection{setSettings}
+\bdf
+\+{[nanoLib,userNanoLib]=setSettings()} sets the local path for the nanoLib library.
+This function is automatically called the first time a \emph{file.dat} is loaded.
+It create a file called \emph{datSettings.txt} with the local settings.
+\edf
+
+% ------------------------------ %
+\subsubsection{loaddat}
+This file is provided by \nanonis{} and loads a specified channel from a \emph{file.dat}.
+\bdf
+\+{[header,data,channels]=loadDat(fn)} loads a file named \emph{fn.dat} and returns the \emph{header}, the \emph{data} and the \emph{channels} list.
+ This function is called by \emph{load.loadProcessedDat} and \textbf{should not be called directly}.
+\edf
+% ------------------------------ %
+\subsubsection{experiment\_XXX}
+\emph{files.dat} are all characterized by a unique \textbf{experiment\_name}, that is saved in the first line of every \emph{.dat} file.
+In the follow we refer to those \emph{files.dat} simply as \emph{experiments}.
+Different \emph{experiments} have different headers and data characteristics.
+Every \emph{experiment} have a specific function called \emph{experiment\_XXX}, \emph{XXX} being the name of the experiment.
+\emph{experiment\_XXX} are called automatically by the \emph{loadProcessedDat} function as listed below.
+
+\bdf
+\+ {experiment\_name = experiment\_XXX('get experiment')} returns the \textbf{experiment\_name}.
+\+ {header = experiment\_XXX('process header',header)} process the \emph{header} of the \emph{experiment}. 
+The \emph{header} variable is result of the function.
+\+ {[header,channels] = experiment\_XXX('process data',header,data)} stores data into the \emph{channels} structure described above. Where needed some additional processing are applied to the data. Header's information are adjusted accordingly.
+\edf
+
+Further \emph{experiments} can be implemented by simply defining a function called \emph{experiment\_newExperiment}. New \emph{experiment} functions \textbf{must} have the same structure described above and should be saved in a \emph{+load} package folder (see section \ref{nanolib::user}).
+
+% ------------------------------ %
+\subsubsection{getAllExperiments}
+\bdf
+\+{experiment\_list = getAllExperiments()} returns a $2 \times n$ list, where $n$ is the number of the function \emph{experiment\_XXX}.
+In the first column is listed the unique name of the experiment saved in the \emph{+load} package folder.
+In the second column compare the correspondent function, i.e., \emph{experiment\_XXX}.
+\edf
+This function is used by the function \emph{loadProcessedDat} when loading different \emph{experiments}.
+
+% ------------------------------ %
+\subsubsection{loadProcessedDat}
+\emph{loadProcessedDat} loads a \emph{file.dat} calling the function \emph{loaddat}.
+And process the \emph{header} and the \emph{data} according to the type of experiment by calling -- automatically -- the corresponding \emph{experiment\_XXX}.
+\bdf
+\+{file=loadProcessedDat()} ask for a \emph{fileName.dat} and load it.
+\+{file=loadProcessedDat(fileName)} load the file named \emph{fileName.dat}.
+\+{file=loadProcessedDat(fileName,pathName)} load the file named \emph{fileName.dat} at a given \emph{pathName}.
+\edf
+
+%-------------------------------------------------------------------------------%
+%  +plotDat                                                                     %
+%-------------------------------------------------------------------------------%
+\subsection{+plotDat}
+This package contains everything needed to plot the data.
+% ------------------------------ %
+\subsubsection{plotData}
+\label{dat::plotData}
+\bdf
+\+{hObject = plotData(data, name, unit, sweep\_channel,varargin)} plots the \emph{data} using according to the \emph{sweep\_channel}. The figure title is deduced from \emph{name} and \emph{unit}. It returns the plot handle \emph{hObject}. \emph{varargin} are the standard plot options. Additional options are provided.
+\bi
+\+ varargin = \{'xOffset', NUMBER \} shifts the x axis by the given offset
+\+ varargin = \{'hideLabels'\} leaves all extra labels out.
+\ei
+\edf
+% ------------------------------ %
+\subsubsection{plotChannel}
+\bdf
+\+{hObject = plotChannel(channel,sweep\_channel,varargin)} plots the \emph{channel} using informations from the \emph{sweep\_channel}. It returns the plot handle  \emph{hObject}. It calls \emph{plot.plotData} on the channel data, \emph{varargin} are therefore the same as \emph{plot.plotData} \ref{dat::plotData}.
+\edf
+
+
+% ------------------------------ %
+\subsubsection{plotFile}
+
+\bdf
+\+{hObject = plotFile(file,channel\_numbers)} plots the $n^{th}$ channel of \emph{file}. \emph{channel\_numbers} may be a $n \times 1$ array. It returns the plot handle \emph{h}.
+
+\+{hObject = plotFile(file,channel\_numbers,run\_numbers)} plots the $n^{th}$ repetition of the provided \emph{channel\_numbers} . Whenever an \emph{experiment} has more loops, repetitions are characterized by a \emph{run\_numbers}.
+\edf
+
+It calls \emph{plot.plotData} on the channel data.
+
+%-------------------------------------------------------------------------------%
+%  +opDat                                                                       %
+%-------------------------------------------------------------------------------%
+\subsection{+op}
+
+To be done
+% ------------------------------ %
+% \subsubsection{getChannel}
+% \bdf
+% \+{channelNumber = getChannel(channels,channelNames)} returns all channel numbers where \emph{header.ChannelList} matches the \emph{channelNames}. \emph{channelNames} can be either a single string or a list of strings.
+%
+% \+{channelNumber = getChannel(channels,channelNames,direction)} returns only the channel number where \emph{channels.Direction} matches the \emph{direction}, too.
+% \edf
