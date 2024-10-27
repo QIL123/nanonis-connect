@@ -11,5 +11,12 @@ and that the nanonis app is set to it
 Bugs:
 -on Retract the Zs step doesnt reset (should it?)
 [V] evaluation error - was done from concratting cell array of chars with cell array of strings :( and device not connected
+[] timer_func Plotting is slow because of calls to nanonis (AC can be reduced by storeing value, DC might be irellavant)
+[] timer_func Plotting causes pauses in program because of addpoints (why?)
+[] end of thermal approach there is pause(3) can we shorten it?
+[] could the propegate motor cause pase ever N steps?
+Features:
+[] thermal initial * ratio > 10 => cant continue change sensitivity (when changing sensitivity ask Nofar how to log the change lockin)
+[] every N extensions => tell user to check blob
 
-- in timer func, when plot (at start) is disabled, the program runs faster, need to check if anything important inside 
+

@@ -398,6 +398,7 @@ classdef Nanonis
            Position=Position.*-10^6;
            
            if Position<1e-3
+               
                 for i=1:5
                    pause(0.01)
                    Nanonis.Send(Nis.instr,'ZCtrl.ZPosGet', 0);
@@ -416,6 +417,7 @@ classdef Nanonis
            Nis=Nanonis;
            V=-1e-6*Dis;
            Nanonis.Send(Nis.instr,'ZCtrl.ZPosSet', 4, 'float32', V);
+           
         end
        
         function [Data_f0,Data_df,Data_Y_size,Data_Y]=Spectrum_Get()
