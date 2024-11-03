@@ -90,7 +90,7 @@ classdef Nanonis
             % [aa, bb, cc]  = Nanonis.Receive(nis, 'float64', 'float64', 'float64',24)
             Nis=Nanonis;
 %             Nis.instr.Timeout = 0.01;
-            DataReceived = fread(Nis.instr,40+varargin{nargin});
+            DataReceived = fread(Nis.instr,40+varargin{nargin})
             k = 1;
             dk = 41;
             vc = 1;
@@ -128,7 +128,7 @@ classdef Nanonis
                                if (size(mes1,2) == 1)
                                   mes1 = strcat('0',mes1);
                                end
-                               mes = strcat(mes,mes1);                   
+                               mes = strcat(mes,mes1);                     
                            end
                            varargout{vc} = typecast(uint32(hex2dec(mes)),'single');
                            clear mm; clear mes; clear mm; 
@@ -153,27 +153,25 @@ classdef Nanonis
                            varargout{vc} = char(DataReceived(dk:(dk+siz-1)));
                            vc = vc+1; dk = dk+siz;
                          case '1D array float32'
-                           
                            Data_Length= varargout{vc-1};    % allways?
                            Vec=zeros(1,Data_Length);
                            for f=1:Data_Length
                                mes = dec2hex(DataReceived(dk));
-                           for j=1:3
-                               mes1 = dec2hex(DataReceived(dk+j));
-                               if (mes1 == '0')
-                                  mes1 = strcat(mes1,'0');
+                               for j=1:7
+                                   mes1 = dec2hex(DataReceived(dk+j));
+                                   if (mes1 == '0')
+                                      mes1 = strcat(mes1,'0');
+                                   end
+                                   if (size(mes1,2) == 1)
+                                      mes1 = strcat('0',mes1);
+                                   end
+                                   mes = strcat(mes,mes1);
                                end
-                               if (size(mes1,2) == 1)
-                                  mes1 = strcat('0',mes1);
-                               end
-                               mes = strcat(mes,mes1);       
-                           end
-                           Vek(f) = typecast(uint32(hex2dec(mes)),'single');
-                           dk = dk+4;   
+                               Vek(f)=hex2num(mes);
+                               dk = dk+4;   
                            end
                            varargout{vc} = Vek;
-                           vc = vc+1;
-                           
+                           vc = vc+1;    
                         case '1D array float64'
                            Data_Length= varargout{vc-1};    % allways?
                            Vec=zeros(1,Data_Length);
@@ -218,14 +216,12 @@ classdef Nanonis
                             varargout{vc} = M;
                             vc = vc+1; 
                    end 
-            end
-                
+                end 
         end    
-        function [V_arr] = Gets(NanonisChannels)
+        function [arr] = Gets(NanonisChannel_vec)
             Nis=Nanonis;
-            int_array_bytes = 4*length(NanonisChannels);
-            Nanonis.Send(Nis.instr, 'Signals.ValsGet',4+4+int_array_bytes,'uint32',2,'1D array int',NanonisChannels,'uint32',1);
-            [~,V_arr]=Nanonis.Receive(Nis.instr,'int','1D array float32', 4+int_array_bytes);
+            Nanonis.Send(Nis.instr, 'Signals.ValsGet',8+2*8,'uint32',2,'1D array int',[2,2],'uint32',1);
+            arr=Nanonis.Receive(Nis.instr,'int','1D array float32', 4+2*4);
             
         end
         %% 

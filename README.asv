@@ -19,4 +19,4 @@ Features:
 [] thermal initial * ratio > 10 => cant continue change sensitivity (when changing sensitivity ask Nofar how to log the change lockin)
 [] every N extensions => tell user to check blob
 
-[]simplify approach app by movig zctrl function ot nanonis file
+[]simplify approach app by movig zctrl function
