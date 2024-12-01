@@ -533,7 +533,34 @@ classdef Nanonis
             end
            
        end
-       
+       function Get_XY()
+          Nis=Nanonis;
+          Nanonis.Send(Nis.instr,'FolMe.XYPosGet', 4, 'uint32',0 );
+          [X,Y] = Nanonis.Receive(Nis.instr,'float64','float64', 16);
+       end
+       function Set_XY(x,y,immediate)
+           if immediate
+               immediate = 0;
+           else
+               immediate = 1;
+           end
+           Nis=Nanonis;
+           Nanonis.Send(Nis.instr,'FolMe.XYPosSet', 4, 'float64',x,'float64',y,0 );
+       end
+       function Get_Speed_XY()
+           Nis=Nanonis;
+           Nanonis.Send(Nis.instr,'FolMe.SpeedGet',0);
+           [speed,speed_custom] = Nanonis.Receive(Nis.instr,'float32','uint32', 16);
+
+       end
+       function Set_Speed_XY(v)
+           Nis=Nanonis;
+           Nanonis.Send(Nis.instr,'FolMe.SpeedSet','float32',v,0);
+       end
+       function Stop_XY()
+            Nis=Nanonis;
+            Nanonis.Send(Nis.instr,'FolMe.Stop',0);
+       end
        
        %????
        function DataLog(BaseName, AveragePoints)
