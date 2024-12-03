@@ -7,6 +7,7 @@ classdef Nanonis
         Zscanner_Length=22;  % Length of extention in um
         XYscanner_Length=40;
         Axis=['0','x','y','z'];
+        MAX_XY_SPEED=3e-6;
     end
     methods(Static)
 
@@ -134,6 +135,7 @@ classdef Nanonis
                            clear mm; clear mes; clear mm; 
                            vc = vc+1; dk = dk+4;
                        case 'float64'
+                           
                            mes = dec2hex(DataReceived(dk));
                            for j=1:7
                                mes1 = dec2hex(DataReceived(dk+j));
@@ -533,31 +535,49 @@ classdef Nanonis
             end
            
        end
-       function Get_XY()
+       function [X,Y]=Get_XY()
+          % returns the X,Y position of tip in meters
           Nis=Nanonis;
           Nanonis.Send(Nis.instr,'FolMe.XYPosGet', 4, 'uint32',0 );
           [X,Y] = Nanonis.Receive(Nis.instr,'float64','float64', 16);
+
        end
        function Set_XY(x,y,immediate)
-           if immediate
-               immediate = 0;
-           else
-               immediate = 1;
+           % moves the X,Y position of tip in meters
+           % if immediate  is True then the current movement is stopped and
+           % the tip starts moving to the requested position, otherwise the
+           % tip waits for prevouse movement commands to finish
+           % X - meters
+           % Y - meters
+           % immediate - boolean (optional)
+
+           %TODO check speed that isnt above max speed and send warning
+           if ~exist('immediate','var')
+                immediate = 1;
+           else 
+               if immediate
+                    immediate = 0;
+                else
+                    immediate = 1;
+               end
            end
            Nis=Nanonis;
-           Nanonis.Send(Nis.instr,'FolMe.XYPosSet', 4, 'float64',x,'float64',y,0 );
+           Nanonis.Send(Nis.instr,'FolMe.XYPosSet', 8+8+4, 'float64',x,'float64',y,'uint32',immediate );
        end
-       function Get_Speed_XY()
+       function [speed,speed_custom]=Get_Speed_XY()
+           % returns current set speed in XY plane
            Nis=Nanonis;
            Nanonis.Send(Nis.instr,'FolMe.SpeedGet',0);
            [speed,speed_custom] = Nanonis.Receive(Nis.instr,'float32','uint32', 16);
 
        end
-       function Set_Speed_XY(v)
+       function Set_Speed_XY(v,custom)
+           %sets speed
            Nis=Nanonis;
-           Nanonis.Send(Nis.instr,'FolMe.SpeedSet','float32',v,0);
+           Nanonis.Send(Nis.instr,'FolMe.SpeedSet','float32',v,'uint32',custom);
        end
        function Stop_XY()
+           %stops the current movement in XY 
             Nis=Nanonis;
             Nanonis.Send(Nis.instr,'FolMe.Stop',0);
        end
