@@ -7,7 +7,7 @@ classdef Nanonis
         Zscanner_Length=22;  % Length of extention in um
         XYscanner_Length=40;
         Axis=['0','x','y','z'];
-        MAX_XY_SPEED=3e-6;
+        MAX_XY_SPEED=3; %max tip xy movement speed in micro meters
     end
     methods(Static)
 
@@ -504,6 +504,7 @@ classdef Nanonis
                    a = 5;
             end
             Nanonis.Send(Nis.instr,'Motor.StartMove', 14,'uint32', a, 'uint16', cast(N_Step, 'uint16') ,'uint32', 0, 'uint32', 1 );
+%             Nanonis.Receive(Nis.instr,'Motor.StartMove','uint32', 'int',8 )
         end
        
         function Z_enc = Get_Encoder_Z()  % Returns Z_Pos in um
@@ -518,7 +519,7 @@ classdef Nanonis
        function Position = Get_Scanner_XY(axis)
            % Gets X Y scanner position in FollowMe Motor; Motor =  'x', 'y' 
             Nis=Nanonis;
-            Nanonis.Send(Nis.instr,'FolMe.XYPosGet', 4, 'uint32',0 );
+            Nanonis.Send(Nis.instr,'FolMe.XYPosGet', 4, 'uint32',1 );
             [X,Y] = Nanonis.Receive(Nis.instr,'float64','float64', 16);
             [~,Loc]=find(Nis.Axis==axis);
             
@@ -535,23 +536,33 @@ classdef Nanonis
             end
            
        end
-       function [X,Y]=Get_XY()
-          % returns the X,Y position of tip in meters
+       function [X,Y]=Get_XY()% returns (0,0) for some reason
+          % returns the X,Y position of tip in micro meters
           Nis=Nanonis;
           Nanonis.Send(Nis.instr,'FolMe.XYPosGet', 4, 'uint32',0 );
-          [X,Y] = Nanonis.Receive(Nis.instr,'float64','float64', 16);
+          [X,Y] = Nanonis.Receive(Nis.instr,'float64','float64',16)
+          X = X*1e6;
+          Y = Y*1e6;
 
        end
-       function Set_XY(x,y,immediate)
-           % moves the X,Y position of tip in meters
+       
+       function Set_XY(x,y,immediate)%
+           % moves the X,Y position of tip in micrometers
            % if immediate  is True then the current movement is stopped and
            % the tip starts moving to the requested position, otherwise the
            % tip waits for prevouse movement commands to finish
-           % X - meters
-           % Y - meters
+           % X - micro meters
+           % Y - micro meters
            % immediate - boolean (optional)
-
+           x = x*1e-6;
+           y = y*1e-6;
            %TODO check speed that isnt above max speed and send warning
+           Nis=Nanonis;
+           tip_speed = Nis.Get_Speed_XY();
+           if Nis.Get_Speed_XY() > Nis.MAX_XY_SPEED
+               warning(sprintf('Follow me movement speed (%.3f) above max speed (%d), ignoring command',tip_speed, Nis.MAX_XY_SPEED))
+               return
+           end
            if ~exist('immediate','var')
                 immediate = 1;
            else 
@@ -561,20 +572,22 @@ classdef Nanonis
                     immediate = 1;
                end
            end
-           Nis=Nanonis;
+           
            Nanonis.Send(Nis.instr,'FolMe.XYPosSet', 8+8+4, 'float64',x,'float64',y,'uint32',immediate );
        end
-       function [speed,speed_custom]=Get_Speed_XY()
-           % returns current set speed in XY plane
+       function [speed]=Get_Speed_XY()%X
+           % returns current set speed in XY plane in micro meters per
+           % second
            Nis=Nanonis;
            Nanonis.Send(Nis.instr,'FolMe.SpeedGet',0);
            [speed,speed_custom] = Nanonis.Receive(Nis.instr,'float32','uint32', 16);
-
+           speed = double(speed*1e6);
        end
-       function Set_Speed_XY(v,custom)
-           %sets speed
+       function Set_Speed_XY(v)%X
+           %sets speed in micro meters per second
+           v = v*1e-6;
            Nis=Nanonis;
-           Nanonis.Send(Nis.instr,'FolMe.SpeedSet','float32',v,'uint32',custom);
+           Nanonis.Send(Nis.instr,'FolMe.SpeedSet',8,'float32',v,'uint32',1);
        end
        function Stop_XY()
            %stops the current movement in XY 
