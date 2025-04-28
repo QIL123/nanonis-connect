@@ -1,4 +1,3 @@
-
 classdef Nanonis
     
 	properties (SetAccess = public)
@@ -97,6 +96,7 @@ classdef Nanonis
             vc = 1;
             % Convert the data from nanonis to unic
             for i=2:(nargin-1)
+               
                switch varargin{i}
                        case 'uint8' 
                            varargout{vc} = DataReceived(dk);
@@ -156,7 +156,7 @@ classdef Nanonis
                            vc = vc+1; dk = dk+siz;
                          case '1D array float32'
                            
-                           Data_Length= varargout{vc-1};    % allways?
+                           Data_Length = varargout{vc-1};    % allways?
                            Vec=zeros(1,Data_Length);
                            for f=1:Data_Length
                                mes = dec2hex(DataReceived(dk));
@@ -171,6 +171,7 @@ classdef Nanonis
                                mes = strcat(mes,mes1);       
                            end
                            Vek(f) = typecast(uint32(hex2dec(mes)),'single');
+                           
                            dk = dk+4;   
                            end
                            varargout{vc} = Vek;
@@ -224,6 +225,7 @@ classdef Nanonis
                 
         end    
         function [V_arr] = Gets(NanonisChannels)
+            %NanonisChannels needs to be in the form of row vector
             Nis=Nanonis;
             int_array_bytes = 4*length(NanonisChannels);
             Nanonis.Send(Nis.instr, 'Signals.ValsGet',4+4+int_array_bytes,'uint32',2,'1D array int',NanonisChannels,'uint32',1);
@@ -510,7 +512,7 @@ classdef Nanonis
         function Z_enc = Get_Encoder_Z()  % Returns Z_Pos in um
             % Gets Z encoder value
             Nis=Nanonis;
-            Nanonis.Send(Nis.instr,'Motor.PosGet', 0);
+            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',0,'uint32',500);
             [X_pos,Y_pos, Z_enc]=Nanonis.Receive(Nis.instr,'float64','float64','float64',24);
             Z_enc = Z_enc*1e6;
        end
