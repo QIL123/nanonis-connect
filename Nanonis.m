@@ -107,7 +107,7 @@ classdef Nanonis
                            vc = vc+1; dk = dk+siz;
                        case 'int'
                            varargout{vc} = DataReceived(dk+3) + DataReceived(dk+2)*2^8 + DataReceived(dk+1)*2^16;
-                           if (DataReceived(dk) > 127);
+                           if (DataReceived(dk) > 127)
                                 varargout{vc} = varargout{vc} + (DataReceived(dk)-256)*2^24;
                            else
                                varargout{vc} = varargout{vc} + DataReceived(dk)*2^24;
@@ -156,7 +156,7 @@ classdef Nanonis
                            vc = vc+1; dk = dk+siz;
                          case '1D array float32'
                            
-                           Data_Length = varargout{vc-1};    % allways?
+                           Data_Length = varargout{vc-1};    % always?
                            Vec=zeros(1,Data_Length);
                            for f=1:Data_Length
                                mes = dec2hex(DataReceived(dk));
@@ -170,15 +170,15 @@ classdef Nanonis
                                end
                                mes = strcat(mes,mes1);       
                            end
-                           Vek(f) = typecast(uint32(hex2dec(mes)),'single');
+                           Vec(f) = typecast(uint32(hex2dec(mes)),'single');
                            
                            dk = dk+4;   
                            end
-                           varargout{vc} = Vek;
+                           varargout{vc} = Vec;
                            vc = vc+1;
                            
                         case '1D array float64'
-                           Data_Length= varargout{vc-1};    % allways?
+                           Data_Length= varargout{vc-1};    % always?
                            Vec=zeros(1,Data_Length);
                            for f=1:Data_Length
                                mes = dec2hex(DataReceived(dk));
@@ -192,10 +192,10 @@ classdef Nanonis
                                    end
                                    mes = strcat(mes,mes1);
                                end
-                               Vek(f)=hex2num(mes);
+                               Vec(f)=hex2num(mes);
                                dk = dk+8;   
                            end
-                           varargout{vc} = Vek;
+                           varargout{vc} = Vec;
                            vc = vc+1; 
                            
                         case '2D array float32'
@@ -512,8 +512,21 @@ classdef Nanonis
         function Z_enc = Get_Encoder_Z()  % Returns Z_Pos in um
             % Gets Z encoder value
             Nis=Nanonis;
-            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',0,'uint32',500);
+            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',0,'uint32',1000);
             [X_pos,Y_pos, Z_enc]=Nanonis.Receive(Nis.instr,'float64','float64','float64',24);
+            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',1,'uint32',1000);
+            [X_pos,Y_pos, Z_enc]=Nanonis.Receive(Nis.instr,'float64','float64','float64',24);
+            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',2,'uint32',1000);
+            [X_pos,Y_pos, Z_enc]=Nanonis.Receive(Nis.instr,'float64','float64','float64',24);
+            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',3,'uint32',1000);
+            [X_pos,Y_pos, Z_enc]=Nanonis.Receive(Nis.instr,'float64','float64','float64',24);
+            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',4,'uint32',1000);
+            [X_pos,Y_pos, Z_enc]=Nanonis.Receive(Nis.instr,'float64','float64','float64',24);
+            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',5,'uint32',1000);
+            [X_pos,Y_pos, Z_enc]=Nanonis.Receive(Nis.instr,'float64','float64','float64',24);
+            Nanonis.Send(Nis.instr,'Motor.PosGet', 8,'uint32',6,'uint32',1000);
+            [X_pos,Y_pos, Z_enc]=Nanonis.Receive(Nis.instr,'float64','float64','float64',24);
+            
             Z_enc = Z_enc*1e6;
        end
        
@@ -538,7 +551,7 @@ classdef Nanonis
             end
            
        end
-       function [X,Y]=Get_XY()% returns (0,0) for some reason
+       function [X,Y]=Get_XY()
           % returns the X,Y position of tip in micro meters
           Nis=Nanonis;
           Nanonis.Send(Nis.instr,'FolMe.XYPosGet', 4, 'uint32',0 );
