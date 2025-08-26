@@ -65,6 +65,9 @@ classdef Nanonis
                              scase = dec2hex(j);
                              scaseS = strcat(scaseS,pad(scase,8, 'left', '0'));
                          end
+                 
+                       
+                       
                end 
               
                por = strcat(por, scaseS);      
@@ -154,6 +157,19 @@ classdef Nanonis
                            siz = varargout{vc-2};
                            varargout{vc} = char(DataReceived(dk:(dk+siz-1)));
                            vc = vc+1; dk = dk+siz;
+                           
+                           
+%                            array_size = varargin{2*i-2};
+%                        number_of_elements = varargin{2*i-1};
+%                        
+%                        
+%                        scase = dec2hex(uint32(char(varargin{2*i+1})));
+%                         
+%                        
+% %                        for j=1:siz
+% %                            scaseS = strcat(scaseS,scase(j,1), scase(j,2));
+                           
+                           
                          case '1D array float32'
                            
                            Data_Length = varargout{vc-1};    % always?
@@ -233,6 +249,10 @@ classdef Nanonis
             
         end
         %% 
+        
+            
+            
+            
         function [V]= Get(NanonisChannel)
             % Get the voltage on a Nanonis channel
             Nis=Nanonis;
@@ -551,9 +571,26 @@ classdef Nanonis
             end
            
        end
+       function [res] = Signal_NamesGet(index)
+           res = 0;
+           Nis=Nanonis;
+           if ~exist('index','var')
+               
+               
+               Nanonis.Send(Nis.instr,'Signals.NamesGet', 0);
+               path_size=Nanonis.Receive(Nis.instr,'int',4);
+               Nanonis.Send(Nis.instr,'Signals.NamesGet', 0);
+               [A,B,C]=Nanonis.Receive(Nis.instr,'int','int','1D array string',4+4+path_size);
+               res = C;
+               return 
+           end 
+           Nanonis.Send(Nis.instr,'Signals.NamesGet', 4, 'int',index);
+           [A,B]=Nanonis.Receive(Nis.instr,'float32','float32',8)
+       end
        function [X,Y]=Get_XY()
           % returns the X,Y position of tip in micro meters
           Nis=Nanonis;
+          
           Nanonis.Send(Nis.instr,'FolMe.XYPosGet', 4, 'uint32',0 );
           [X,Y] = Nanonis.Receive(Nis.instr,'float64','float64',16)
           X = X*1e6;
