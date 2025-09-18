@@ -98,6 +98,12 @@ classdef General
                                     Instrument =tcpip(Ip, Port,'NetworkRole', 'client');
                                     fopen(Instrument);
                                     Magnet.Setup(); 
+                                    
+                                case 'SMS'
+                                    serverIP = '132.64.81.133';
+                                    port = 30000;
+                                    Instrument = tcpip(serverIP, port, 'NetworkRole', 'client');
+                                    fopen(Instrument);
                             end
                         
                     case 'VISA' %   For Lock-in & Keithley 2450
@@ -130,8 +136,17 @@ classdef General
                                         end
  
                                     case '0.3K'
-                                        model_code = convertCharsToStrings(instr_name(end-7:end));
-                                        Instrument = visa('NI', strcat('USB0::0x05E6::0x2450::',model_code,'::0::INSTR'));
+                                        switch instr_name
+                                            case 'VISA-04499955'
+                                                model_code = convertCharsToStrings(instr_name(end-7:end));
+                                                Instrument = visa('NI', strcat('USB0::0x05E6::0x2450::',model_code,'::0::INSTR'));
+                                            case 'VISA-04499369'
+                                                model_code = convertCharsToStrings(instr_name(end-7:end));
+                                                Instrument = visa('NI', strcat('USB0::0x05E6::0x6500::',model_code,'::0::INSTR'));
+                                            case 'VISA-04500131'
+                                                model_code = convertCharsToStrings(instr_name(end-7:end));
+                                                Instrument = visa('NI', strcat('USB0::0x05E6::0x2450::',model_code,'::0::INSTR'));
+                                        end
                                 
                                 end
                             case 'Lock_in'
@@ -378,6 +393,8 @@ classdef General
                 Computer = '0.3K';
             elseif contains(result,"34-17-EB-98-3D-17") == true
                 Computer = 'VUP';
+            elseif contains(result,"80-6D-97-08-6D-B1") == true
+                Computer = 'SMS';
             else
                 disp('not able to recognize the computer')
             end
@@ -422,6 +439,12 @@ classdef General
                     dX=V-Volt(n-1);
                     S=[Temp(n-1),dT/dV-dV*(2*C(n-1)+C(n))/6,C(n-1)/2,(C(n)-C(n-1))/(6*dV)];
                     T=S(1)+S(2).*dX+S(3)*(dX.^2)+S(4)*(dX.^3);
+                 case '0.3K'
+                    Temp_Calibration = load(fullfile('C:\Users\owner\Dropbox\Scripts\Metadata\Temp_calibration_0_3K.mat'));
+                    Temp = Temp_Calibration.T.Temp;
+                    Resistance =Temp_Calibration.T.Resistance;
+                    R = V/(10e-6); % I = 10e-6 [A]
+                    T = interp1(Resistance, Temp, R);  
             end
         end
         
