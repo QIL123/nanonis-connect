@@ -384,7 +384,7 @@ classdef General
 
         function [Computer]=Check_Computer()
             [status, result] = dos('getmac'); % result should contain the MAC address of the current computer
-%             result = '18-60-24-84-03-89';
+          result = '18-60-24-84-03-89';
             if contains(result,'18-60-24-84-03-89') == true
                 Computer = '4K';
             elseif contains(result,"84-A9-3E-70-D4-3A") == true
