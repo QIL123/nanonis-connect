@@ -1130,6 +1130,14 @@ classdef Nanonis
             Nanonis.Send(Nis.instr,'Util.RTOversamplSet', 4, 'int', n);
         end
 %         
+        function Set_Session_Folder(path,save_settings)
+             if ~exist('save_settings','var')
+               save_settings = 1;
+             end 
+            path_length = strlength(path);
+            Nis=Nanonis;
+            Nanonis.Send(Nis.instr,'Util.SessionPathSet',8+path_length,'int',path_length,'string',path,'uint32',save_settings);
+        end
         function SF=Get_Session_Folder()
             Nis=Nanonis;
             Nanonis.Send(Nis.instr,'Util.SessionPathGet',0);
@@ -1138,6 +1146,8 @@ classdef Nanonis
             [~,path]=Nanonis.Receive(Nis.instr,'int','string',4+path_size);
             SF=strcat(path');
         end
+
+        
         
         
         function Check_Vfb_Lock()

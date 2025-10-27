@@ -99,7 +99,7 @@ classdef General
                                     fopen(Instrument);
                                     Magnet.Setup(); 
                                     
-                                case 'SMS'
+                                case 'SMS' % DR Magnet Computer
                                     serverIP = '132.64.81.133';
                                     port = 30000;
                                     Instrument = tcpip(serverIP, port, 'NetworkRole', 'client');
@@ -154,6 +154,12 @@ classdef General
 %                             case 'Oschillator'
 %                                  model_code = convertCharsToStrings(instr_name(6:end));
 %                                  Instrument = visa('NI',strcat('USB0::0x2A8D::0x0396::CN',model_code,'::0::INSTR'));
+                            case 'MPS'
+                                 switch Gen.Computer
+                                    case '0.3K'
+                                        model_code = convertCharsToStrings(instr_name(end-1:end));
+                                        Instrument = visa('NI', strcat('ASRL',model_code,'::INSTR'));
+                                 end
                         end
                         fopen(Instrument);
                 end
@@ -384,7 +390,7 @@ classdef General
 
         function [Computer]=Check_Computer()
             [status, result] = dos('getmac'); % result should contain the MAC address of the current computer
-          result = '18-60-24-84-03-89';
+%             result = '18-60-24-84-03-89';
             if contains(result,'18-60-24-84-03-89') == true
                 Computer = '4K';
             elseif contains(result,"84-A9-3E-70-D4-3A") == true
@@ -439,7 +445,7 @@ classdef General
                     dX=V-Volt(n-1);
                     S=[Temp(n-1),dT/dV-dV*(2*C(n-1)+C(n))/6,C(n-1)/2,(C(n)-C(n-1))/(6*dV)];
                     T=S(1)+S(2).*dX+S(3)*(dX.^2)+S(4)*(dX.^3);
-                 case '0.3K'
+                case '0.3K'
                     Temp_Calibration = load(fullfile('C:\Users\owner\Dropbox\Scripts\Metadata\Temp_calibration_0_3K.mat'));
                     Temp = Temp_Calibration.T.Temp;
                     Resistance =Temp_Calibration.T.Resistance;
